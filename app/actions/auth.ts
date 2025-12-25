@@ -38,12 +38,16 @@ export const login = async (data: { email: string; password: string }) => {
     const userObj = JSON.parse(JSON.stringify(user));
     const token = await generateToken({ id: user._id });
     console.log(token);
+
+    // Use different cookie settings for development vs production
+    const isProduction = process.env.NODE_ENV === 'production';
+
     cookie.set("token", token, {
       httpOnly: true,
       maxAge: JWT_EXPIRES,
-      sameSite: "none",
+      sameSite: isProduction ? "none" : "lax",
       path: "/",
-      secure: true,
+      secure: isProduction,
     });
 
     return { success: "Login successful", data: userObj };

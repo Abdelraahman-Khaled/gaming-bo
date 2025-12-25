@@ -32,12 +32,22 @@ const Login = () => {
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     console.log(data);
     startTransition(async () => {
-      const res = await login(data);
-      console.log(res);
-      if (res.success) {
-        toast.success(res.success);
-        router.push("/");
-      } else toast.error(res.error);
+      try {
+        const res = await login(data);
+        console.log(res);
+        if (res.success) {
+          toast.success(res.success);
+          router.push("/");
+        } else {
+          toast.error(res.error || "Login failed");
+          if (res.details) {
+            console.error("Login error details:", res.details);
+          }
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        toast.error("An error occurred during login");
+      }
     });
   };
   return (

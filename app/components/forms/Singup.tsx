@@ -42,39 +42,55 @@ const Singup = () => {
   const [isPending, startTransition] = useTransition();
   const onSubmit = async (data: z.infer<typeof singupSchema>) => {
     startTransition(async () => {
-      if (data.avatar) {
-        const formData = new FormData();
-        formData.append("file", data.avatar[0]);
-        formData.append("upload_preset", "ml_default");
-        try {
-          const res = await fetch(process.env.NEXT_PUBLIC_CLOUDINARY_URL!, {
-            method: "POST",
-            body: formData,
-          });
+      try {
+        // Upload avatar if provided
+        if (data.avatar && data.avatar[0]) {
+          const formData = new FormData();
+          formData.append("file", data.avatar[0]);
+          formData.append("upload_preset", "ml_default");
 
-          console.log(res);
-          if (!res.ok) {
-            const errorResponse = await res.json(); // Show Cloudinary error details
-            console.error("Cloudinary Error:", errorResponse);
-            throw new Error("Failed to upload photo");
+          try {
+            const res = await fetch(process.env.NEXT_PUBLIC_CLOUDINARY_URL!, {
+              method: "POST",
+              body: formData,
+            });
+
+            console.log(res);
+            if (!res.ok) {
+              const errorResponse = await res.json();
+              console.error("Cloudinary Error:", errorResponse);
+              toast.error("Failed to upload photo");
+              // Continue with signup even if avatar upload fails
+              data.avatar = null;
+            } else {
+              const cloudinaryData = await res.json();
+              data.avatar = {
+                secure_url: cloudinaryData.secure_url,
+                public_id: cloudinaryData.public_id,
+              };
+            }
+          } catch (error) {
+            console.error("Photo upload failed:", error);
+            toast.error("Photo upload failed, continuing without avatar");
+            data.avatar = null;
           }
-
-          const cloudinaryData = await res.json();
-          data.avatar = {
-            secure_url: cloudinaryData.secure_url,
-            public_id: cloudinaryData.public_id,
-          };
-        } catch (error) {
-          console.error("Photo upload failed:", error);
-          return;
+        } else {
+          // No avatar provided
+          data.avatar = null;
         }
+
+        // Signup user (with or without avatar)
         const response = await signup(data);
         console.log(response);
         if (response?.success) {
           toast.success(response.success);
           router.push('/login');
+        } else {
+          toast.error(response.error || "Signup failed");
         }
-        else toast.error(response.error);
+      } catch (error) {
+        console.error("Signup error:", error);
+        toast.error("An error occurred during signup");
       }
     });
   };
