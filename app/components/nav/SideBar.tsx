@@ -35,11 +35,11 @@ export const NAV_LINKS = [
     label: "WIshlist",
     icon: <FaHeart />,
   },
-  {
-    link: "/friends",
-    label: "Friends",
-    icon: <BsFillPeopleFill />,
-  },
+  // {
+  //   link: "/friends",
+  //   label: "Friends",
+  //   icon: <BsFillPeopleFill />,
+  // },
 ];
 
 const SideBar = () => {

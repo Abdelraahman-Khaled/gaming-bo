@@ -1,15 +1,27 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GridContainer from "@/app/components/defaults/GridContainer";
 import { useGetGames } from "@/lib/queryFunctions";
 import GameSkeleton from "./GameSkeleton";
 import GameCard from "./GameCard";
 import Empty from "./defaults/Empty";
 import { PaginationCustom } from "./PaginationCustom";
+import { useSearchParams } from "next/navigation";
 
 const Filters = ({ generes }: { generes: any[] }) => {
+  const searchParams = useSearchParams();
+  const genreParam = searchParams.get("genre");
+
+  // Initialize activeGenres from URL parameter if present
   const [page, setPage] = useState(1);
-  const [activeGenres, setActiveGenres] = useState<number[]>([]);
+  const [activeGenres, setActiveGenres] = useState<number[]>(() => {
+    if (genreParam) {
+      const genreId = parseInt(genreParam);
+      return isNaN(genreId) ? [] : [genreId];
+    }
+    return [];
+  });
+
   const { games, isLoading } = useGetGames({
     page,
     filters: activeGenres.length > 0 ? [{ filterName: "genres", option: activeGenres?.join(",") }] : [],

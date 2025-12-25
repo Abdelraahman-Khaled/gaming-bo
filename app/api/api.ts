@@ -40,3 +40,8 @@ export const getGamesByIds = async function (ids: string[]) {
   const data = await Promise.all(ids.map((id) => getGame(id)));
   return data;
 };
+
+export const getGenres = async function () {
+  const data = await fetchFn(`${APIURL}genres?key=${KEY}`, 3600);
+  return data;
+};
